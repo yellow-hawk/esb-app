@@ -15,6 +15,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { createNotification } from '@/hooks/useNotifications';
 
+function formatLocalDatetime(dt: string) {
+  const d = new Date(dt);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function toUTCString(localDatetime: string) {
+  return new Date(localDatetime).toISOString();
+}
+
 const eventSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(200),
   description: z.string().optional(),
@@ -86,8 +96,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
       form.reset({
         title: event.title,
         description: event.description || '',
-        start_datetime: event.start_datetime ? new Date(event.start_datetime).toISOString().slice(0, 16) : '',
-        end_datetime: event.end_datetime ? new Date(event.end_datetime).toISOString().slice(0, 16) : '',
+        start_datetime: event.start_datetime ? formatLocalDatetime(event.start_datetime) : '',
+        end_datetime: event.end_datetime ? formatLocalDatetime(event.end_datetime) : '',
         location: event.location || '',
         category: event.category || '',
         max_participants: event.max_participants || '',
@@ -118,8 +128,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
       const eventData = {
         title: data.title,
         description: data.description || null,
-        start_datetime: new Date(data.start_datetime).toISOString(),
-        end_datetime: new Date(data.end_datetime).toISOString(),
+        start_datetime: toUTCString(data.start_datetime),
+        end_datetime: toUTCString(data.end_datetime),
         location: data.location || null,
         category: data.category || null,
         max_participants: data.max_participants ? Number(data.max_participants) : null,
