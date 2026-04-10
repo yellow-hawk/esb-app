@@ -220,7 +220,15 @@ export default function AuthPage() {
                             <Input 
                               placeholder="Votre nom" 
                               className="pl-10"
-                              {...field} 
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}placeholder="Votre nom" 
+                              className="pl-10"
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name} 
                             />
                           </div>
                         </FormControl>
@@ -242,7 +250,10 @@ export default function AuthPage() {
                               type="email" 
                               placeholder="votre@email.fr" 
                               className="pl-10"
-                              {...field} 
+                              value={field.value}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              name={field.name}
                             />
                           </div>
                         </FormControl>
