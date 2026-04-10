@@ -72,9 +72,9 @@ const App = () => (
     <AuthProvider>
       <BrandingProvider>
         <TooltipProvider>
+          <AppContent />
           <Toaster />
           <Sonner />
-          <AppContent />
         </TooltipProvider>
       </BrandingProvider>
     </AuthProvider>
