@@ -206,136 +206,92 @@ export default function AuthPage() {
                 </form>
               </Form>
             ) : (
-              <Form {...signupForm}>
-                <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Nom</label>
+              <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">Nom</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
                       type="text"
                       placeholder="Votre nom"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm pl-10"
                       {...signupForm.register('name')}
                     />
-                      <FormItem>
-                        <FormLabel>Nom</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              placeholder="Votre nom" 
-                              className="pl-10"
-                              value={field.value}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}placeholder="Votre nom" 
-                              className="pl-10"
-                              value={field.value}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  </div>
+                  {signupForm.formState.errors.name && (
+                    <p className="text-sm font-medium text-destructive">{signupForm.formState.errors.name.message}</p>
+                  )}
+                </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Email</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
                       type="email"
                       placeholder="votre@email.fr"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm pl-10"
                       {...signupForm.register('email')}
                     />
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type="email" 
-                              placeholder="votre@email.fr" 
-                              className="pl-10"
-                              value={field.value}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              name={field.name}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  </div>
+                  {signupForm.formState.errors.email && (
+                    <p className="text-sm font-medium text-destructive">{signupForm.formState.errors.email.message}</p>
+                  )}
+                </div>
 
-                  <FormField
-                    control={signupForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mot de passe</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="••••••••" 
-                              className="pl-10 pr-10"
-                              {...field} 
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">Mot de passe</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm pl-10 pr-10"
+                      {...signupForm.register('password')}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                  {signupForm.formState.errors.password && (
+                    <p className="text-sm font-medium text-destructive">{signupForm.formState.errors.password.message}</p>
+                  )}
+                </div>
 
-                  <FormField
-                    control={signupForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirmer le mot de passe</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="••••••••" 
-                              className="pl-10"
-                              {...field} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">Confirmer le mot de passe</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm pl-10"
+                      {...signupForm.register('confirmPassword')}
+                    />
+                  </div>
+                  {signupForm.formState.errors.confirmPassword && (
+                    <p className="text-sm font-medium text-destructive">{signupForm.formState.errors.confirmPassword.message}</p>
+                  )}
+                </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full gradient-forest text-primary-foreground"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Inscription...' : 'S\'inscrire'}
-                  </Button>
-                </form>
-              </Form>
+                <Button 
+                  type="submit" 
+                  className="w-full gradient-forest text-primary-foreground"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Inscription...' : 'S\'inscrire'}
+                </Button>
+              </form>
             )}
 
             <div className="mt-6 text-center">
