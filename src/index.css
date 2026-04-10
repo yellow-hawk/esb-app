@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Forest Green Theme - Light Mode */
+    --background: 45 20% 97%;
+    --foreground: 150 25% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 25% 12%;
+
+    /* Primary: Deep Forest Green */
+    --primary: 153 45% 23%;
+    --primary-foreground: 45 20% 97%;
+
+    /* Secondary: Warm Wood */
+    --secondary: 30 35% 85%;
+    --secondary-foreground: 150 25% 12%;
+
+    --muted: 45 15% 92%;
+    --muted-foreground: 150 10% 45%;
+
+    /* Accent: Emerald */
+    --accent: 152 55% 35%;
+    --accent-foreground: 45 20% 97%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 45 15% 88%;
+    --input: 45 15% 88%;
+    --ring: 153 45% 23%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Gradients */
+    --gradient-forest: linear-gradient(135deg, hsl(153 45% 23%) 0%, hsl(152 55% 35%) 100%);
+    --gradient-wood: linear-gradient(135deg, hsl(30 35% 85%) 0%, hsl(35 40% 75%) 100%);
+    --gradient-nature: linear-gradient(180deg, hsl(45 20% 97%) 0%, hsl(45 25% 93%) 100%);
+
+    /* Sidebar */
+    --sidebar-background: 153 45% 23%;
+    --sidebar-foreground: 45 20% 97%;
+    --sidebar-primary: 152 55% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 153 35% 28%;
+    --sidebar-accent-foreground: 45 20% 97%;
+    --sidebar-border: 153 35% 18%;
+    --sidebar-ring: 152 55% 45%;
+
+    /* Dynamic branding - will be overridden by JS */
+    --brand-primary: #1C6135;
+    --brand-secondary: #2D7A4A;
+    --brand-accent: #4CAF50;
+    --brand-bg: #0F3D1F;
+    --brand-primary-hsl: 153 45% 23%;
+    --brand-secondary-hsl: 152 40% 33%;
+    --brand-accent-hsl: 122 39% 49%;
+    --brand-bg-hsl: 150 45% 15%;
+    --brand-primary-fg: #ffffff;
+    --brand-secondary-fg: #ffffff;
+    --brand-accent-fg: #ffffff;
+    --brand-bg-fg: #ffffff;
+  }
+
+  .dark {
+    --background: 150 20% 8%;
+    --foreground: 45 20% 95%;
+
+    --card: 150 18% 12%;
+    --card-foreground: 45 20% 95%;
+
+    --popover: 150 18% 12%;
+    --popover-foreground: 45 20% 95%;
+
+    --primary: 152 55% 45%;
+    --primary-foreground: 150 25% 8%;
+
+    --secondary: 150 15% 18%;
+    --secondary-foreground: 45 20% 95%;
+
+    --muted: 150 15% 18%;
+    --muted-foreground: 45 10% 60%;
+
+    --accent: 152 55% 40%;
+    --accent-foreground: 150 25% 8%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 15% 20%;
+    --input: 150 15% 20%;
+    --ring: 152 55% 45%;
+
+    --sidebar-background: 150 20% 10%;
+    --sidebar-foreground: 45 20% 95%;
+    --sidebar-primary: 152 55% 45%;
+    --sidebar-primary-foreground: 150 25% 8%;
+    --sidebar-accent: 150 15% 15%;
+    --sidebar-accent-foreground: 45 20% 95%;
+    --sidebar-border: 150 15% 15%;
+    --sidebar-ring: 152 55% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    /* Background is controlled by branding CSS variables */
+    background-color: var(--brand-bg);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .gradient-forest {
+    background: var(--gradient-forest);
+  }
+
+  .gradient-wood {
+    background: var(--gradient-wood);
+  }
+
+  .gradient-nature {
+    background: var(--gradient-nature);
+  }
+
+  .text-gradient-forest {
+    background: var(--gradient-forest);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-lg border border-border/50;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  /* Smooth animations */
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Mobile-first scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Orbit animation for splash screen */
+  .animate-orbit {
+    animation: orbit 4s linear infinite;
+  }
+
+  @keyframes orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Counter-rotate to keep images upright */
+  .orbit-image {
+    animation: counter-orbit 4s linear infinite;
+  }
+
+  @keyframes counter-orbit {
+    from {
+      transform: translate(-50%, 0) rotate(0deg);
+    }
+    to {
+      transform: translate(-50%, 0) rotate(-360deg);
+    }
+  }
+}
