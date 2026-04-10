@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, MapPin, Users, ChevronRight, Copy, Check } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronRight, Copy, Check, Download } from 'lucide-react';
 import { format, isPast } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
@@ -77,6 +77,38 @@ export default function StaffRegistrations() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownloadCSV = () => {
+    if (!registrations || registrations.length === 0 || !selectedEvent) return;
+
+    const headers = ['Nom', 'Email', 'Statut', 'Date inscription'];
+    const rows = registrations.map((r: any) => [
+      r.profiles?.name || 'N/A',
+      r.profiles?.email || 'N/A',
+      r.status,
+      format(new Date(r.created_at), 'dd/MM/yyyy HH:mm', { locale: fr }),
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.join(';'))
+    ].join('\n');
+
+    // Ajout BOM pour que Excel reconnaisse les accents
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const eventDate = format(new Date(selectedEvent.start_datetime), 'yyyy-MM-dd', { locale: fr });
+    link.href = url;
+    link.download = `inscrits_${selectedEvent.title.replace(/[^a-zA-Z0-9àâäéèêëïîôùûüç\s-]/g, '').replace(/\s+/g, '_')}_${eventDate}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({ title: 'CSV téléchargé !' });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -150,14 +182,20 @@ export default function StaffRegistrations() {
                 {registrations?.length || 0} inscrit(s)
               </p>
               {registrations && registrations.length > 0 && (
-                <Button variant="outline" size="sm" onClick={handleCopyList}>
-                  {copied ? (
-                    <Check className="h-4 w-4 mr-1" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-1" />
-                  )}
-                  Copier la liste
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleCopyList}>
+                    {copied ? (
+                      <Check className="h-4 w-4 mr-1" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-1" />
+                    )}
+                    Copier
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+                    <Download className="h-4 w-4 mr-1" />
+                    CSV
+                  </Button>
+                </div>
               )}
             </div>
 
