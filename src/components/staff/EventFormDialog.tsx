@@ -118,8 +118,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
       const eventData = {
         title: data.title,
         description: data.description || null,
-        start_datetime: data.start_datetime,
-        end_datetime: data.end_datetime,
+        start_datetime: new Date(data.start_datetime).toISOString(),
+        end_datetime: new Date(data.end_datetime).toISOString(),
         location: data.location || null,
         category: data.category || null,
         max_participants: data.max_participants ? Number(data.max_participants) : null,
