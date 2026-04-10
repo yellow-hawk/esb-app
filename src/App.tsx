@@ -40,7 +40,7 @@ function AppContent() {
   }
 
   return (
-    <BrowserRouter basename="/esb-app">
+    <BrowserRouter basename="/esb-app/">
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/" element={<AppLayout><FeedPage /></AppLayout>} />
