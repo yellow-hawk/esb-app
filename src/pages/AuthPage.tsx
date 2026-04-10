@@ -208,10 +208,14 @@ export default function AuthPage() {
             ) : (
               <Form {...signupForm}>
                 <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-                  <FormField
-                    control={signupForm.control}
-                    name="name"
-                    render={({ field }) => (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Nom</label>
+                    <input
+                      type="text"
+                      placeholder="Votre nom"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      {...signupForm.register('name')}
+                    />
                       <FormItem>
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
@@ -237,10 +241,14 @@ export default function AuthPage() {
                     )}
                   />
 
-                  <FormField
-                    control={signupForm.control}
-                    name="email"
-                    render={({ field }) => (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email</label>
+                    <input
+                      type="email"
+                      placeholder="votre@email.fr"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      {...signupForm.register('email')}
+                    />
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
