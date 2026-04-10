@@ -56,10 +56,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .maybeSingle();
+      .eq('user_id', userId);
     
-    setUserRole(data?.role ?? 'etudiant');
+    if (data && data.length > 0) {
+      const roles = data.map(r => r.role);
+      if (roles.includes('admin')) {
+        setUserRole('admin');
+      } else if (roles.includes('bds_staff')) {
+        setUserRole('bds_staff');
+      } else {
+        setUserRole('etudiant');
+      }
+    } else {
+      setUserRole('etudiant');
+    }
   };
 
   const signIn = async (email: string, password: string) => {
