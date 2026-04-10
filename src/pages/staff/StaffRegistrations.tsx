@@ -24,7 +24,6 @@ export default function StaffRegistrations() {
         .gte('start_datetime', new Date().toISOString())
         .order('start_datetime', { ascending: true });
       
-      if (error) throw error;
       return data;
     },
   });
@@ -34,11 +33,30 @@ export default function StaffRegistrations() {
     queryFn: async () => {
       if (!selectedEvent) return [];
       
-      const { data, error } = await supabase
+      const { data: regs, error } = await supabase
         .from('registrations')
-        .select('*, profiles(name, email)')
+        .select('*')
         .eq('event_id', selectedEvent.id)
         .eq('status', 'confirmed');
+      
+      if (error) throw error;
+      
+      // Récupérer les profils séparément
+      const userIds = regs?.map(r => r.user_id) || [];
+      let profiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .in('id', userIds);
+        profiles = profileData || [];
+      }
+      
+      // Combiner les données
+      const data = regs?.map(r => ({
+        ...r,
+        profiles: profiles.find(p => p.id === r.user_id) || null,
+      })) || [];
       
       if (error) throw error;
       return data;
