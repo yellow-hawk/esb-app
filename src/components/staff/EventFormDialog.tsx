@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,44 @@ function toUTCString(localDatetime: string) {
   return new Date(localDatetime).toISOString();
 }
 
+function generateOccurrences(startDatetime: string, endDatetime: string, recurrence: string, recurrenceEndDate: string) {
+  const occurrences: Array<{ start: string; end: string }> = [];
+  const start = new Date(startDatetime);
+  const end = new Date(endDatetime);
+  const duration = end.getTime() - start.getTime();
+  const endRecurrence = new Date(recurrenceEndDate + 'T23:59:59');
+
+  let current = new Date(start);
+
+  while (current <= endRecurrence) {
+    const occStart = new Date(current);
+    const occEnd = new Date(current.getTime() + duration);
+    occurrences.push({
+      start: occStart.toISOString(),
+      end: occEnd.toISOString(),
+    });
+
+    switch (recurrence) {
+      case 'daily':
+        current.setDate(current.getDate() + 1);
+        break;
+      case 'weekly':
+        current.setDate(current.getDate() + 7);
+        break;
+      case 'biweekly':
+        current.setDate(current.getDate() + 14);
+        break;
+      case 'monthly':
+        current.setMonth(current.getMonth() + 1);
+        break;
+      default:
+        return occurrences;
+    }
+  }
+
+  return occurrences;
+}
+
 const eventSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').max(200),
   description: z.string().optional(),
@@ -34,10 +73,15 @@ const eventSchema = z.object({
   category: z.string().optional(),
   max_participants: z.coerce.number().positive().optional().or(z.literal('')),
   is_registration_open: z.boolean(),
+  recurrence: z.string(),
+  recurrence_end_date: z.string().optional(),
   send_notification: z.boolean(),
   notif_title: z.string().max(50).optional(),
   notif_body: z.string().max(120).optional(),
 }).refine(
+  (data) => data.recurrence === 'none' || (data.recurrence_end_date && data.recurrence_end_date.length > 0),
+  { message: 'La date de fin de récurrence est requise', path: ['recurrence_end_date'] }
+).refine(
   (data) => !data.send_notification || (data.notif_title && data.notif_title.length > 0),
   { message: 'Le titre de notification est requis', path: ['notif_title'] }
 ).refine(
@@ -83,6 +127,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
       category: '',
       max_participants: '',
       is_registration_open: true,
+      recurrence: 'none',
+      recurrence_end_date: '',
       send_notification: false,
       notif_title: '',
       notif_body: '',
@@ -90,6 +136,7 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
   });
 
   const sendNotification = form.watch('send_notification');
+  const recurrence = form.watch('recurrence');
 
   useEffect(() => {
     if (event) {
@@ -102,6 +149,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
         category: event.category || '',
         max_participants: event.max_participants || '',
         is_registration_open: event.is_registration_open,
+        recurrence: event.recurrence || 'none',
+        recurrence_end_date: event.recurrence_end_date || '',
         send_notification: false,
         notif_title: '',
         notif_body: '',
@@ -116,6 +165,8 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
         category: '',
         max_participants: '',
         is_registration_open: true,
+        recurrence: 'none',
+        recurrence_end_date: '',
         send_notification: false,
         notif_title: '',
         notif_body: '',
@@ -125,16 +176,16 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
 
   const mutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const eventData = {
+      const baseEventData = {
         title: data.title,
         description: data.description || null,
-        start_datetime: toUTCString(data.start_datetime),
-        end_datetime: toUTCString(data.end_datetime),
         location: data.location || null,
         category: data.category || null,
         max_participants: data.max_participants ? Number(data.max_participants) : null,
         is_registration_open: data.is_registration_open,
         association_id: association?.id,
+        recurrence: data.recurrence,
+        recurrence_end_date: data.recurrence_end_date || null,
       };
 
       let eventId: string;
@@ -142,14 +193,58 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
       if (isEditing) {
         const { error } = await supabase
           .from('events')
-          .update(eventData)
+          .update({
+            ...baseEventData,
+            start_datetime: toUTCString(data.start_datetime),
+            end_datetime: toUTCString(data.end_datetime),
+          })
           .eq('id', event.id);
         if (error) throw error;
         eventId = event.id;
+      } else if (data.recurrence !== 'none' && data.recurrence_end_date) {
+        // Générer les occurrences
+        const groupId = crypto.randomUUID();
+        const occurrences = generateOccurrences(
+          data.start_datetime,
+          data.end_datetime,
+          data.recurrence,
+          data.recurrence_end_date
+        );
+
+        if (occurrences.length === 0) {
+          throw new Error('Aucune occurrence générée');
+        }
+
+        if (occurrences.length > 100) {
+          throw new Error('Trop d\'occurrences (max 100). Réduisez la période ou changez la fréquence.');
+        }
+
+        const eventsToInsert = occurrences.map(occ => ({
+          ...baseEventData,
+          start_datetime: occ.start,
+          end_datetime: occ.end,
+          recurrence_group_id: groupId,
+        }));
+
+        const { data: newEvents, error } = await supabase
+          .from('events')
+          .insert(eventsToInsert)
+          .select();
+        if (error) throw error;
+        eventId = newEvents[0].id;
+
+        toast({
+          title: `${occurrences.length} événements créés`,
+          description: `Récurrence ${data.recurrence === 'daily' ? 'quotidienne' : data.recurrence === 'weekly' ? 'hebdomadaire' : data.recurrence === 'biweekly' ? 'bimensuelle' : 'mensuelle'} jusqu'au ${data.recurrence_end_date}`,
+        });
       } else {
         const { data: newEvent, error } = await supabase
           .from('events')
-          .insert(eventData)
+          .insert({
+            ...baseEventData,
+            start_datetime: toUTCString(data.start_datetime),
+            end_datetime: toUTCString(data.end_datetime),
+          })
           .select()
           .single();
         if (error) throw error;
@@ -170,7 +265,6 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
             sendPush: true,
           });
 
-          // Call edge function to send push notifications
           const { data: pushResult, error: pushError } = await supabase.functions.invoke('send-push-notification', {
             body: { notification_id: result.notification.id },
           });
@@ -204,17 +298,19 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
           title: isEditing ? 'Événement modifié' : 'Événement créé',
           description: `Notification envoyée à ${result.recipientCount} utilisateur${result.recipientCount > 1 ? 's' : ''}${pushInfo}`,
         });
-      } else {
-        toast({ title: isEditing ? 'Événement modifié' : 'Événement créé' });
+      } else if (!isEditing && recurrence === 'none') {
+        toast({ title: 'Événement créé' });
+      } else if (isEditing) {
+        toast({ title: 'Événement modifié' });
       }
       
       onOpenChange(false);
       form.reset();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: 'Erreur',
-        description: 'Une erreur est survenue',
+        description: error.message || 'Une erreur est survenue',
         variant: 'destructive',
       });
     },
@@ -352,6 +448,53 @@ export function EventFormDialog({ open, onOpenChange, event }: EventFormDialogPr
                 </FormItem>
               )}
             />
+
+            {/* Récurrence section */}
+            <div className="border-t pt-4 space-y-3">
+              <FormField
+                control={form.control}
+                name="recurrence"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Récurrence</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pas de récurrence" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Pas de récurrence</SelectItem>
+                        <SelectItem value="daily">Tous les jours</SelectItem>
+                        <SelectItem value="weekly">Toutes les semaines</SelectItem>
+                        <SelectItem value="biweekly">Toutes les 2 semaines</SelectItem>
+                        <SelectItem value="monthly">Tous les mois</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {recurrence !== 'none' && (
+                <FormField
+                  control={form.control}
+                  name="recurrence_end_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Répéter jusqu'au</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Tous les événements seront créés d'un coup
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
 
             {/* Notification section */}
             <div className="border-t pt-4 space-y-3">
